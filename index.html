@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DJ HYPE MC BOT</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="box">
+    <h1>🔥 DJ HYPE MC BOT</h1>
+
+    <p class="subtitle">
+      Mesaje MC • Pauză 3 secunde • Energie maximă
+    </p>
+
+    <label for="messages">Mesaje MC</label>
+
+    <textarea
+      id="messages"
+      placeholder="Toată lumea, gălăgie pentru Ștefan!&#10;&#10;Ștefan, numărul 1!&#10;&#10;La mulți ani, Ștefan!&#10;&#10;Mâinile sus pentru Ștefan!&#10;&#10;Ringul de dans, acum!"
+    ></textarea>
+
+    <div class="controls">
+      <button id="startBtn">▶ START</button>
+      <button id="stopBtn" class="stop">■ STOP</button>
+      <button id="generateBtn">🎧 GENEREAZĂ</button>
+      <button id="playBtn">🔊 REDĂ AUDIO</button>
+      <button id="copyBtn">📋 COPIAZĂ</button>
+    </div>
+
+    <div class="status" id="status">
+      Status: OPRIT
+    </div>
+
+    <div class="timer" id="timer">
+      —
+    </div>
+
+    <div class="message" id="current">
+      Aștept mesajele MC...
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
