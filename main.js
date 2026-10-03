@@ -35,6 +35,7 @@ function initAudioContext() {
   }
 }
 
+// Sunet de Finger Snap / Cue Mark
 function playFingerSnap() {
   initAudioContext();
   const osc = audioCtx.createOscillator();
@@ -42,16 +43,34 @@ function playFingerSnap() {
   
   osc.type = 'triangle';
   osc.frequency.setValueAtTime(2400, audioCtx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
+  osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.08);
 
-  gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+  gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
 
   osc.connect(gain);
   gain.connect(audioCtx.destination);
 
   osc.start();
-  osc.stop(audioCtx.currentTime + 0.05);
+  osc.stop(audioCtx.currentTime + 0.08);
+}
+
+// Efect de Reverb / Echo de Stadion
+function playBeepFx() {
+  initAudioContext();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.15);
 }
 
 // ===============================
@@ -94,13 +113,20 @@ function loadSession() {
 
 function populateBrowserVoices() {
   const voices = speechSynthesis.getVoices();
+  const savedVoice = browserVoiceSelect.value;
   browserVoiceSelect.innerHTML = "";
+
+  if (voices.length === 0) return;
 
   voices.forEach((v) => {
     const opt = document.createElement("option");
     opt.value = v.name;
     opt.textContent = `${v.name} (${v.lang})`;
-    if (v.lang.includes("ro")) opt.selected = true;
+    if (savedVoice && v.name === savedVoice) {
+      opt.selected = true;
+    } else if (!savedVoice && v.lang.toLowerCase().includes("ro")) {
+      opt.selected = true;
+    }
     browserVoiceSelect.appendChild(opt);
   });
 }
@@ -132,99 +158,113 @@ messagesBox.addEventListener("input", saveSession);
 
 window.addEventListener("DOMContentLoaded", () => {
   populateBrowserVoices();
+  setTimeout(populateBrowserVoices, 500); // Siguranță dublă pentru reîncărcarea vocilor
   loadSession();
 });
 
 // ===============================
-// OBȚINERE TIMP DE PAUZĂ
+// OBȚINERE TIMP DE PAUZĂ (10s - 60s / Manual)
 // ===============================
 
 function getSelectedPauseTime() {
   if (intervalPreset.value === "custom") {
-    return parseInt(customDelayInput.value, 10) || 10;
+    const val = parseInt(customDelayInput.value, 10);
+    return isNaN(val) ? 10 : val;
   }
-  return parseInt(intervalPreset.value, 10) || 30;
+  const val = parseInt(intervalPreset.value, 10);
+  return isNaN(val) ? 30 : val;
 }
 
 // ===============================
-// REDARE VOCE CU EFECTE & TIMBRE
+// REDARE VOCE CU APLICAREA REALA A PARAMETRILOR
 // ===============================
 
 function speakMC(text) {
   speechSynthesis.cancel();
   initAudioContext();
 
+  // Executare Efecte Acustice Adăugate
   if (fxSelect.value === "snaps") {
     playFingerSnap();
+  } else if (fxSelect.value === "big_hall") {
+    playBeepFx();
   }
 
   const speech = new SpeechSynthesisUtterance(text);
 
+  // Forțare selectare voce fizică
   const voices = speechSynthesis.getVoices();
-  const matchedVoice = voices.find(v => v.name === browserVoiceSelect.value);
-  if (matchedVoice) speech.voice = matchedVoice;
-  speech.lang = matchedVoice ? matchedVoice.lang : "ro-RO";
+  const selectedVoiceName = browserVoiceSelect.value;
+  const matchedVoice = voices.find(v => v.name === selectedVoiceName);
 
+  if (matchedVoice) {
+    speech.voice = matchedVoice;
+    speech.lang = matchedVoice.lang;
+  } else {
+    speech.lang = "ro-RO";
+  }
+
+  // APLICARE SETĂRI DE PITCH ȘI SPEED PENTRU FIECARE STIL MC
   const style = voiceSelect.value;
 
   switch(style) {
     case "mc_party":
-      speech.rate = 1.15;
-      speech.pitch = 1.2;
+      speech.rate = 1.25;
+      speech.pitch = 1.3;
       speech.volume = 1;
       break;
     case "mc_podcast":
-      speech.rate = 0.95;
-      speech.pitch = 0.85;
-      speech.volume = 0.9;
+      speech.rate = 0.9;
+      speech.pitch = 0.75;
+      speech.volume = 0.95;
       break;
     case "mc_radio":
-      speech.rate = 1.25;
-      speech.pitch = 1.1;
+      speech.rate = 1.35;
+      speech.pitch = 1.15;
       speech.volume = 1;
       break;
     case "dj_drop":
-      speech.rate = 0.85;
-      speech.pitch = 0.5;
+      speech.rate = 0.8;
+      speech.pitch = 0.3;
       speech.volume = 1;
       break;
     case "vader":
-      speech.rate = 0.8;
+      speech.rate = 0.75;
       speech.pitch = 0.1;
       speech.volume = 1;
       break;
     case "minion":
-      speech.rate = 1.5;
+      speech.rate = 1.6;
       speech.pitch = 2.0;
       speech.volume = 1;
       break;
     case "alien":
       speech.rate = 1.1;
-      speech.pitch = 1.6;
-      speech.volume = 0.95;
-      break;
-    case "wedding_mc":
-      speech.rate = 0.98;
-      speech.pitch = 0.95;
+      speech.pitch = 1.7;
       speech.volume = 0.9;
       break;
+    case "wedding_mc":
+      speech.rate = 0.95;
+      speech.pitch = 0.9;
+      speech.volume = 0.95;
+      break;
     case "stadium_mc":
-      speech.rate = 1.1;
-      speech.pitch = 1.3;
+      speech.rate = 1.15;
+      speech.pitch = 1.4;
       speech.volume = 1;
       break;
     case "hype_man":
-      speech.rate = 1.4;
-      speech.pitch = 1.35;
+      speech.rate = 1.5;
+      speech.pitch = 1.4;
       speech.volume = 1;
       break;
     case "club_mc":
-      speech.rate = 1.05;
-      speech.pitch = 0.75;
+      speech.rate = 1.0;
+      speech.pitch = 0.6;
       speech.volume = 1;
       break;
     default:
-      speech.rate = 1.05;
+      speech.rate = 1.0;
       speech.pitch = 1.0;
       speech.volume = 1;
   }
@@ -295,9 +335,10 @@ async function startMC() {
 
     currentIndex++;
 
+    // Aici se aplică timpul din interfață (10s, 30s, 60s sau manual)
     if (running && currentIndex < messages.length) {
-      const delay = getSelectedPauseTime();
-      await waitInterval(delay);
+      const delaySeconds = getSelectedPauseTime();
+      await waitInterval(delaySeconds);
     }
   }
 
@@ -323,7 +364,7 @@ function stopMC() {
 }
 
 // ===============================
-// BUTOANE DE ACCIUNE
+// BUTOANE DE ACȚIUNE
 // ===============================
 
 generateBtn.addEventListener("click", () => {
