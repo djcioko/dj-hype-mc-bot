@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DJ HYPE MC BOT</title>
+  <title>DJ HYPE MC BOT - ULTRA EDITION</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,21 +12,85 @@
     <h1>🔥 DJ HYPE MC BOT</h1>
 
     <p class="subtitle">
-      Mesaje MC • Pauză 3 secunde • Energie maximă
+      Interval inteligent • Efecte Audio FX & Voci MC • Memorie Sesiune
     </p>
 
-    <label for="messages">Mesaje MC</label>
-
+    <label for="messages">Mesaje MC (unul pe linie)</label>
     <textarea
       id="messages"
       placeholder="Toată lumea, gălăgie pentru Ștefan!&#10;&#10;Ștefan, numărul 1!&#10;&#10;La mulți ani, Ștefan!&#10;&#10;Mâinile sus pentru Ștefan!&#10;&#10;Ringul de dans, acum!"
     ></textarea>
 
+    <!-- SETĂRI TIMP PAUZĂ -->
+    <div class="settings-panel">
+      <h3>⏱️ Setări Interval Redare (Secunde)</h3>
+      
+      <div class="setting-row">
+        <label for="intervalPreset">Preset Interval:</label>
+        <select id="intervalPreset">
+          <option value="10">10 Secunde (Rapid)</option>
+          <option value="15">15 Secunde</option>
+          <option value="30" selected>30 Secunde (Standard Party)</option>
+          <option value="45">45 Secunde</option>
+          <option value="60">60 Secunde (Chill)</option>
+          <option value="custom">Manual / Personalizat</option>
+        </select>
+      </div>
+
+      <div class="setting-row" id="customDelayRow">
+        <label for="customDelay">Timp Pauză Manual (sec):</label>
+        <input type="number" id="customDelay" min="3" max="300" value="10">
+      </div>
+    </div>
+
+    <!-- SETĂRI VOCI & EFECTE -->
+    <div class="settings-panel">
+      <h3>🎤 Selector Voci & Efecte MC</h3>
+      
+      <div class="setting-row">
+        <label for="voiceSelect">Stil Voce / Character FX:</label>
+        <select id="voiceSelect">
+          <optgroup label="🎧 MC & Radio Presets">
+            <option value="mc_party" selected>🔥 MC Party Crowd Hype (Punchy & High Energy)</option>
+            <option value="mc_podcast">🎙️ MC Podcast (Deep, Smooth & Warm Studio)</option>
+            <option value="mc_radio">📻 MC Radio Hype (Aggressive, Fast & Compressed)</option>
+            <option value="dj_drop">🎧 DJ Drop Announcer (Pitch-shifted & Heavy Bass)</option>
+          </optgroup>
+          <optgroup label="👾 Fun & Sci-Fi Characters">
+            <option value="vader">🖤 Darth Vader (Deep Dark Sci-Fi Voice)</option>
+            <option value="minion">🍌 Minion Party (High Pitch Speed Up)</option>
+            <option value="alien">👽 Alien Cyber Synth (Oscillated Pitch)</option>
+          </optgroup>
+          <optgroup label="🎉 Extra Party MC Voices">
+            <option value="wedding_mc">🥂 Wedding MC Toast (Elegant & Warm)</option>
+            <option value="stadium_mc">🏟️ Stadium / Arena Announcer (Echo & Power)</option>
+            <option value="hype_man">⚡ Hype Man (Ultra-fast Rhythmic Delivery)</option>
+            <option value="club_mc">🕺 Mainstage Club MC (Deep Reverb & Echo)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label for="fxSelect">Efecte Reverb / Acustică:</label>
+        <select id="fxSelect">
+          <option value="big_hall">🏟️ Big Hall Reverb & Big Stadium Echo</option>
+          <option value="snaps">🫰 Sharp Finger Snaps & Cue Marks</option>
+          <option value="dry">🎙️ Studio Direct (Fără Echo/Reverb)</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label for="browserVoice">Voce Sistem Browser (TTS):</label>
+        <select id="browserVoice"></select>
+      </div>
+    </div>
+
+    <!-- CONTROALE -->
     <div class="controls">
-      <button id="startBtn">▶ START</button>
+      <button id="startBtn">▶ START MC</button>
       <button id="stopBtn" class="stop">■ STOP</button>
-      <button id="generateBtn">🎧 GENEREAZĂ</button>
-      <button id="playBtn">🔊 REDĂ AUDIO</button>
+      <button id="generateBtn">🎧 PREGĂTEȘTE</button>
+      <button id="playBtn">🔊 TEST VOCE</button>
       <button id="copyBtn">📋 COPIAZĂ</button>
     </div>
 
