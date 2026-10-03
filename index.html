@@ -1,112 +1,606 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DJ HYPE MC BOT - ULTRA EDITION</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIMP Web-Master Cue & MC Player</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-color: #2d2d2d;
+            --accent-color: #ff8c00;
+            --text-color: #e0e0e0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .player-container {
+            background: var(--panel-color);
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header span {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 20px;
+        }
+
+        .drop-zone {
+            border: 3px dashed var(--accent-color);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            background: #222;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            background: #333;
+            border-color: #ffa500;
+        }
+
+        .drop-zone input[type=file] { display: none; }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #111;
+            color: var(--accent-color);
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        .vu-meter {
+            height: 20px;
+            background: #000;
+            width: 100%;
+            margin: 15px 0;
+            position: relative;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .vu-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #00ff00, #ffff00, #ff0000);
+            transition: width 0.05s;
+        }
+
+        input[type=range] {
+            height: 12px;
+            -webkit-appearance: none;
+            background: #444;
+            border-radius: 5px;
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 24px;
+            background: var(--accent-color);
+            cursor: pointer;
+            border-radius: 3px;
+            box-shadow: 0 0 5px #000;
+        }
+
+        .grid-effects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .effect-group {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #444;
+        }
+
+        .effect-group label {
+            display: block;
+            font-size: 11px;
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .effect-group label:first-child { margin-top: 0; }
+
+        .value-display {
+            float: right;
+            color: #aaa;
+            font-size: 10px;
+        }
+
+        select {
+            width: 100%;
+            margin-top: 5px;
+            background: #444;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .action-btns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-start { background: #2e7d32; }
+        .btn-stop { background: #c62828; }
+        .btn-play { background: var(--accent-color); }
+
+        .status-message {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid var(--accent-color);
+            font-size: 12px;
+        }
+
+        .timer-badge {
+            display: inline-block;
+            background: #000;
+            color: var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="box">
-    <h1>🔥 DJ HYPE MC BOT</h1>
-
-    <p class="subtitle">
-      Interval inteligent • Efecte Audio FX & Voci MC • Memorie Sesiune
-    </p>
-
-    <label for="messages">Mesaje MC (unul pe linie)</label>
-    <textarea
-      id="messages"
-      placeholder="Toată lumea, gălăgie pentru Ștefan!&#10;&#10;Ștefan, numărul 1!&#10;&#10;La mulți ani, Ștefan!&#10;&#10;Mâinile sus pentru Ștefan!&#10;&#10;Ringul de dans, acum!"
-    ></textarea>
-
-    <!-- SETĂRI TIMP PAUZĂ -->
-    <div class="settings-panel">
-      <h3>⏱️ Setări Interval Redare (Secunde)</h3>
-      
-      <div class="setting-row">
-        <label for="intervalPreset">Preset Interval:</label>
-        <select id="intervalPreset">
-          <option value="10">10 Secunde (Rapid)</option>
-          <option value="15">15 Secunde</option>
-          <option value="30" selected>30 Secunde (Standard Party)</option>
-          <option value="45">45 Secunde</option>
-          <option value="60">60 Secunde (Chill)</option>
-          <option value="custom">Manual / Personalizat</option>
-        </select>
-      </div>
-
-      <div class="setting-row" id="customDelayRow">
-        <label for="customDelay">Timp Pauză Manual (sec):</label>
-        <input type="number" id="customDelay" min="3" max="300" value="10">
-      </div>
+<div class="player-container">
+    <div class="header">
+        <span>🎤 DJ MC LIVE & VOICE FX STUDIO</span>
     </div>
 
-    <!-- SETĂRI VOCI & EFECTE -->
-    <div class="settings-panel">
-      <h3>🎤 Selector Voci & Efecte MC</h3>
-      
-      <div class="setting-row">
-        <label for="voiceSelect">Stil Voce / Character FX:</label>
-        <select id="voiceSelect">
-          <optgroup label="🎧 MC & Radio Presets">
-            <option value="mc_party" selected>🔥 MC Party Crowd Hype (Punchy & High Energy)</option>
-            <option value="mc_podcast">🎙️ MC Podcast (Deep, Smooth & Warm Studio)</option>
-            <option value="mc_radio">📻 MC Radio Hype (Aggressive, Fast & Compressed)</option>
-            <option value="dj_drop">🎧 DJ Drop Announcer (Pitch-shifted & Heavy Bass)</option>
-          </optgroup>
-          <optgroup label="👾 Fun & Sci-Fi Characters">
-            <option value="vader">🖤 Darth Vader (Deep Dark Sci-Fi Voice)</option>
-            <option value="minion">🍌 Minion Party (High Pitch Speed Up)</option>
-            <option value="alien">👽 Alien Cyber Synth (Oscillated Pitch)</option>
-          </optgroup>
-          <optgroup label="🎉 Extra Party MC Voices">
-            <option value="wedding_mc">🥂 Wedding MC Toast (Elegant & Warm)</option>
-            <option value="stadium_mc">🏟️ Stadium / Arena Announcer (Echo & Power)</option>
-            <option value="hype_man">⚡ Hype Man (Ultra-fast Rhythmic Delivery)</option>
-            <option value="club_mc">🕺 Mainstage Club MC (Deep Reverb & Echo)</option>
-          </optgroup>
-        </select>
-      </div>
+    <!-- MESAJE MC -->
+    <label style="font-size: 11px; color: var(--accent-color); font-weight: bold;">MESAJE MC (Câte un mesaj pe linie):</label>
+    <textarea id="messagesBox" placeholder="Salutare tuturor!
+Suntem LIVE în această seară!
+Pregătiți-vă pentru un nou track!"></textarea>
 
-      <div class="setting-row">
-        <label for="fxSelect">Efecte Reverb / Acustică:</label>
-        <select id="fxSelect">
-          <option value="big_hall">🏟️ Big Hall Reverb & Big Stadium Echo</option>
-          <option value="snaps">🫰 Sharp Finger Snaps & Cue Marks</option>
-          <option value="dry">🎙️ Studio Direct (Fără Echo/Reverb)</option>
-        </select>
-      </div>
+    <!-- STATUS DISPLAY -->
+    <div class="status-message" id="statusMsg">Gata de difuzare.</div>
+    <div class="timer-badge" id="timerDisplay">⏸ TIMER PAUZĂ: --</div>
 
-      <div class="setting-row">
-        <label for="browserVoice">Voce Sistem Browser (TTS):</label>
-        <select id="browserVoice"></select>
-      </div>
+    <div class="vu-meter"><div id="vuFill" class="vu-fill"></div></div>
+
+    <!-- CONTROALE VOICES & PAUZĂ -->
+    <div class="grid-effects">
+        <div class="effect-group">
+            <label>PRESET VOCE / CARACTER</label>
+            <select id="voicePreset">
+                <option value="normal">🎵 Normal</option>
+                <option value="vader">👹 Darth Vader</option>
+                <option value="minion">🐹 Minion</option>
+                <option value="radio">📻 Radio MC</option>
+                <option value="monster">👾 Monster</option>
+                <option value="podcast">🎙️ Podcast</option>
+            </select>
+
+            <label>PAUZĂ ÎNTRE MESAJE</label>
+            <select id="intervalPreset">
+                <option value="10">10 Secunde</option>
+                <option value="15">15 Secunde</option>
+                <option value="30" selected>30 Secunde</option>
+                <option value="45">45 Secunde</option>
+                <option value="60">60 Secunde (1 Minut)</option>
+            </select>
+
+            <label>VOICE SYSTEM (BROWSER ENGINE)</label>
+            <select id="browserVoiceSelect"></select>
+        </div>
+
+        <div class="effect-group">
+            <label>PITCH (TONALITATE) <span class="value-display" id="pitchVal">0</span></label>
+            <input type="range" id="pitch" min="-12" max="12" step="1" value="0">
+
+            <label>SPEED (VITEZĂ) <span class="value-display" id="speedVal">1.0x</span></label>
+            <input type="range" id="speed" min="0.5" max="2" step="0.05" value="1">
+
+            <label>VOLUME <span class="value-display" id="volVal">80%</span></label>
+            <input type="range" id="volume" min="0" max="1" step="0.05" value="0.8">
+        </div>
+
+        <div class="effect-group">
+            <label>ECHO <span class="value-display" id="echoVal">0%</span></label>
+            <input type="range" id="echo" min="0" max="0.8" step="0.05" value="0">
+
+            <label>REVERB <span class="value-display" id="reverbVal">0%</span></label>
+            <input type="range" id="reverb" min="0" max="0.8" step="0.05" value="0">
+
+            <label>BASS BOOST <span class="value-display" id="bassVal">0 dB</span></label>
+            <input type="range" id="bass" min="0" max="20" step="1" value="0">
+        </div>
     </div>
 
-    <!-- CONTROALE -->
-    <div class="controls">
-      <button id="startBtn">▶ START MC</button>
-      <button id="stopBtn" class="stop">■ STOP</button>
-      <button id="generateBtn">🎧 PREGĂTEȘTE</button>
-      <button id="playBtn">🔊 TEST VOCE</button>
-      <button id="copyBtn">📋 COPIAZĂ</button>
+    <!-- BUTOANE ACȚIUNE -->
+    <div class="action-btns">
+        <button class="btn-start" id="startBtn">▶ START MC LIVE</button>
+        <button class="btn-stop" id="stopBtn">⛔ STOP</button>
+        <button class="btn-play" id="playTestBtn">🎧 TEST MESAJE</button>
     </div>
+</div>
 
-    <div class="status" id="status">
-      Status: OPRIT
-    </div>
+<script>
+    let audioCtx, analyzer, gainNode, delayNode, feedbackNode, bassFilter, reverbDelay1, reverbDelay2, reverbGain;
+    let messages = [];
+    let currentIndex = 0;
+    let running = false;
+    let timer = null;
 
-    <div class="timer" id="timer">
-      —
-    </div>
+    // Afișaj valori slidere
+    const sliders = {
+        echo: 'echoVal',
+        reverb: 'reverbVal',
+        speed: 'speedVal',
+        pitch: 'pitchVal',
+        volume: 'volVal',
+        bass: 'bassVal'
+    };
 
-    <div class="message" id="current">
-      Aștept mesajele MC...
-    </div>
-  </div>
+    Object.keys(sliders).forEach(id => {
+        const slider = document.getElementById(id);
+        const display = document.getElementById(sliders[id]);
+        slider.oninput = () => {
+            let val = parseFloat(slider.value);
+            if (id === 'echo' || id === 'reverb') display.textContent = Math.round(val * 100) + '%';
+            else if (id === 'speed') display.textContent = val.toFixed(2) + 'x';
+            else if (id === 'volume') display.textContent = Math.round(val * 100) + '%';
+            else if (id === 'bass') display.textContent = val + ' dB';
+            else if (id === 'pitch') display.textContent = val > 0 ? '+' + val : val;
+            
+            saveConfig();
+        };
+    });
 
-  <script src="main.js"></script>
+    // Inițializare Web Audio API Chain
+    function initAudioEngine() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            bassFilter = audioCtx.createBiquadFilter();
+            bassFilter.type = "lowshelf";
+            bassFilter.frequency.value = 200;
+
+            delayNode = audioCtx.createDelay();
+            feedbackNode = audioCtx.createGain();
+
+            reverbDelay1 = audioCtx.createDelay();
+            reverbDelay1.delayTime.value = 0.03;
+            reverbDelay2 = audioCtx.createDelay();
+            reverbDelay2.delayTime.value = 0.05;
+            reverbGain = audioCtx.createGain();
+
+            gainNode = audioCtx.createGain();
+            analyzer = audioCtx.createAnalyser();
+            analyzer.fftSize = 256;
+        }
+
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    // Actualizare parametri efecte în timp real
+    function updateAudioParams() {
+        if (!audioCtx) return;
+
+        gainNode.gain.value = parseFloat(document.getElementById('volume').value);
+        bassFilter.gain.value = parseFloat(document.getElementById('bass').value);
+
+        const echoVal = parseFloat(document.getElementById('echo').value);
+        delayNode.delayTime.value = echoVal > 0 ? 0.3 : 0;
+        feedbackNode.gain.value = echoVal;
+
+        const reverbVal = parseFloat(document.getElementById('reverb').value);
+        reverbGain.gain.value = reverbVal;
+    }
+
+    // Încărcare voci din sistem
+    function populateVoices() {
+        const voiceSelect = document.getElementById('browserVoiceSelect');
+        const voices = speechSynthesis.getVoices();
+        voiceSelect.innerHTML = '';
+        voices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.name;
+            opt.textContent = `${v.name} (${v.lang})`;
+            if (v.lang.toLowerCase().includes('ro')) opt.selected = true;
+            voiceSelect.appendChild(opt);
+        });
+    }
+
+    speechSynthesis.onvoiceschanged = populateVoices;
+
+    // Setări rapide per caracter (Voice Preset)
+    document.getElementById('voicePreset').onchange = (e) => {
+        const val = e.target.value;
+        const pitchInput = document.getElementById('pitch');
+        const speedInput = document.getElementById('speed');
+        const bassInput = document.getElementById('bass');
+        const echoInput = document.getElementById('echo');
+
+        switch(val) {
+            case 'vader':
+                pitchInput.value = -8;
+                speedInput.value = 0.85;
+                bassInput.value = 15;
+                echoInput.value = 0.2;
+                break;
+            case 'minion':
+                pitchInput.value = 10;
+                speedInput.value = 1.4;
+                bassInput.value = 0;
+                echoInput.value = 0;
+                break;
+            case 'radio':
+                pitchInput.value = 2;
+                speedInput.value = 1.2;
+                bassInput.value = 8;
+                echoInput.value = 0.1;
+                break;
+            case 'monster':
+                pitchInput.value = -12;
+                speedInput.value = 0.7;
+                bassInput.value = 20;
+                echoInput.value = 0.4;
+                break;
+            case 'podcast':
+                pitchInput.value = -1;
+                speedInput.value = 0.95;
+                bassInput.value = 5;
+                echoInput.value = 0;
+                break;
+            default:
+                pitchInput.value = 0;
+                speedInput.value = 1.0;
+                bassInput.value = 0;
+                echoInput.value = 0;
+        }
+
+        Object.keys(sliders).forEach(id => {
+            document.getElementById(id).dispatchEvent(new Event('input'));
+        });
+        
+        saveConfig();
+    };
+
+    // Redare discurs sonor
+    function speakText(text) {
+        return new Promise((resolve) => {
+            speechSynthesis.cancel();
+            initAudioEngine();
+            updateAudioParams();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = speechSynthesis.getVoices();
+            const selectedVoice = document.getElementById('browserVoiceSelect').value;
+            const matchedVoice = voices.find(v => v.name === selectedVoice);
+
+            if (matchedVoice) utterance.voice = matchedVoice;
+
+            // Calculare Pitch & Speed din controale
+            const speedVal = parseFloat(document.getElementById('speed').value);
+            const pitchVal = parseFloat(document.getElementById('pitch').value);
+            
+            utterance.rate = speedVal;
+            // Mapare pitch (-12..12 st) la scara HTML5 SpeechSynthesis (0..2)
+            utterance.pitch = Math.max(0, Math.min(2, 1 + (pitchVal / 12)));
+
+            utterance.onend = () => {
+                resolve();
+            };
+
+            utterance.onerror = () => {
+                resolve();
+            };
+
+            speechSynthesis.speak(utterance);
+            updateVU();
+        });
+    }
+
+    // Cronometru pauze
+    function waitInterval(seconds) {
+        return new Promise(resolve => {
+            let remaining = seconds;
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.textContent = `⏸ PAUZĂ URMĂTORUL MESAJ: ${remaining}s`;
+
+            timer = setInterval(() => {
+                remaining--;
+                if (remaining > 0) {
+                    timerDisplay.textContent = `⏸ PAUZĂ URMĂTORUL MESAJ: ${remaining}s`;
+                } else {
+                    clearInterval(timer);
+                    timer = null;
+                    timerDisplay.textContent = "🎤 MC LIVE!";
+                    resolve();
+                }
+            }, 1000);
+        });
+    }
+
+    // Buclă de transmisie MC Live
+    async function startMC() {
+        if (running) return;
+
+        messages = document.getElementById('messagesBox').value
+            .split('\n')
+            .map(t => t.trim())
+            .filter(t => t.length > 0);
+
+        if (messages.length === 0) {
+            document.getElementById('statusMsg').textContent = '⚠️ Introduceți cel puțin un mesaj!';
+            return;
+        }
+
+        running = true;
+        currentIndex = 0;
+        
+        while (running && currentIndex < messages.length) {
+            const msg = messages[currentIndex];
+            document.getElementById('statusMsg').textContent = `🎤 REDARE (${currentIndex + 1}/${messages.length}): "${msg}"`;
+            
+            await speakText(msg);
+
+            currentIndex++;
+
+            if (running && currentIndex < messages.length) {
+                const delaySec = parseInt(document.getElementById('intervalPreset').value, 10);
+                await waitInterval(delaySec);
+            }
+        }
+
+        if (running) {
+            document.getElementById('statusMsg').textContent = '✅ Transmisie finalizată.';
+            document.getElementById('timerDisplay').textContent = '⏸ TIMER PAUZĂ: --';
+        }
+        running = false;
+    }
+
+    function stopMC() {
+        running = false;
+        if (timer) clearInterval(timer);
+        speechSynthesis.cancel();
+        document.getElementById('statusMsg').textContent = '⛔ Transmisie oprită.';
+        document.getElementById('timerDisplay').textContent = '⏸ TIMER PAUZĂ: --';
+    }
+
+    // Memorie Setări (LocalStorage)
+    function saveConfig() {
+        const config = {
+            messages: document.getElementById('messagesBox').value,
+            preset: document.getElementById('voicePreset').value,
+            interval: document.getElementById('intervalPreset').value,
+            pitch: document.getElementById('pitch').value,
+            speed: document.getElementById('speed').value,
+            volume: document.getElementById('volume').value,
+            echo: document.getElementById('echo').value,
+            reverb: document.getElementById('reverb').value,
+            bass: document.getElementById('bass').value
+        };
+        localStorage.setItem("mc_studio_config", JSON.stringify(config));
+    }
+
+    function loadConfig() {
+        const saved = localStorage.getItem("mc_studio_config");
+        if (saved) {
+            try {
+                const c = JSON.parse(saved);
+                if (c.messages !== undefined) document.getElementById('messagesBox').value = c.messages;
+                if (c.preset) document.getElementById('voicePreset').value = c.preset;
+                if (c.interval) document.getElementById('intervalPreset').value = c.interval;
+                if (c.pitch) document.getElementById('pitch').value = c.pitch;
+                if (c.speed) document.getElementById('speed').value = c.speed;
+                if (c.volume) document.getElementById('volume').value = c.volume;
+                if (c.echo) document.getElementById('echo').value = c.echo;
+                if (c.reverb) document.getElementById('reverb').value = c.reverb;
+                if (c.bass) document.getElementById('bass').value = c.bass;
+
+                Object.keys(sliders).forEach(id => {
+                    document.getElementById(id).dispatchEvent(new Event('input'));
+                });
+            } catch(e) {}
+        }
+    }
+
+    // Vizualizator VU-Meter
+    function updateVU() {
+        if (!speechSynthesis.speaking || !analyzer) {
+            document.getElementById('vuFill').style.width = '0%';
+            return;
+        }
+
+        const dataArray = new Uint8Array(analyzer.frequencyBinCount);
+        analyzer.getByteFrequencyData(dataArray);
+
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        const avg = sum / dataArray.length;
+        const percent = Math.min(100, (avg / 128) * 100);
+
+        document.getElementById('vuFill').style.width = percent + '%';
+        requestAnimationFrame(updateVU);
+    }
+
+    // Evenimente Butoane
+    document.getElementById('startBtn').onclick = startMC;
+    document.getElementById('stopBtn').onclick = stopMC;
+    document.getElementById('playTestBtn').onclick = () => {
+        const text = document.getElementById('messagesBox').value.split('\n')[0] || "Test voce MC!";
+        speakText(text);
+    };
+    document.getElementById('messagesBox').oninput = saveConfig;
+    document.getElementById('intervalPreset').onchange = saveConfig;
+
+    window.onload = () => {
+        populateVoices();
+        loadConfig();
+    };
+</script>
 </body>
 </html>
